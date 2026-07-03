@@ -1,7 +1,5 @@
-
-
-import chromadb
-from chromadb.api.models.Collection import Collection
+import chromadb # type: ignore
+from chromadb.api.models.Collection import Collection # type: ignore
 
 # Create a persistent ChromaDB client.
 # The database files will be stored in backend/vector_store/
