@@ -1,6 +1,7 @@
 from pathlib import Path
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 from app.pdf_loader import extract_text
 from app.chunker import chunk_text
 from app.embeddings import generate_embedding
@@ -9,6 +10,16 @@ from app.rag import stream_answer
 from pydantic import BaseModel
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5500",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
@@ -27,23 +38,26 @@ def root():
 
 @app.post("/upload")
 async def upload_pdf(file: UploadFile = File(...)):
-    # Save uploaded PDF
+    print("1. Upload started")
+
     destination = UPLOAD_DIR / file.filename
 
     with open(destination, "wb") as buffer:
         buffer.write(await file.read())
 
-    # Extract text from the PDF
+    print("2. File saved")
+
     text = extract_text(str(destination))
+    print("3. Text extracted")
 
-    # Split the text into chunks
     chunks = chunk_text(text)
+    print(f"4. {len(chunks)} chunks created")
 
-    # Generate embeddings for all chunks
     embeddings = generate_embedding(chunks)
+    print("5. Embeddings generated")
 
-    # Store chunks and embeddings in ChromaDB
     add_documents(chunks, embeddings)
+    print("6. Documents stored")
 
     return {
         "filename": file.filename,

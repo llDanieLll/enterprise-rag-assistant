@@ -1,20 +1,24 @@
-import ollama # type: ignore
+import ollama  # type: ignore
 
 
-def generate_embedding(text: str) -> list[float]:
+def generate_embedding(text: str | list[str]) -> list[float] | list[list[float]]:
     """
-    Generate an embedding vector for a piece of text.
+    Generate embedding vectors.
 
     Args:
-        text: Input text.
+        text: Either a single string or a list of strings.
 
     Returns:
-        A list of floating-point numbers representing the embedding.
+        - If the input is a single string, returns one embedding vector.
+        - If the input is a list of strings, returns one embedding vector per string.
     """
 
     response = ollama.embed(
         model="nomic-embed-text",
-        input=text
+        input=text,
     )
 
-    return response["embeddings"][0]
+    if isinstance(text, str):
+        return response["embeddings"][0]
+
+    return response["embeddings"]

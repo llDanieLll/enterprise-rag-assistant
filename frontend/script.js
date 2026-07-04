@@ -1,8 +1,12 @@
-
-
+console.log("script.js loaded");
 const chatBox = document.getElementById("chat-box");
 const messageInput = document.getElementById("message");
 const sendButton = document.getElementById("send");
+
+const uploadButton = document.getElementById("upload");
+const pdfInput = document.getElementById("pdf-file");
+
+
 
 function currentTime() {
     return new Date().toLocaleTimeString([], {
@@ -41,6 +45,7 @@ async function sendMessage() {
 
     addMessage(question, "user");
     messageInput.value = "";
+    messageInput.focus();
 
     const aiBubble = addMessage("", "ai");
 
@@ -67,7 +72,46 @@ async function sendMessage() {
     }
 }
 
+async function uploadPDF() {
+    console.log("Upload button clicked");
+
+    const file = pdfInput.files[0];
+    console.log(file);
+
+    if (!file) {
+        alert("Please choose a PDF first.");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    console.log("Sending request...");
+
+    const response = await fetch("http://127.0.0.1:8000/upload", {
+        method: "POST",
+        body: formData,
+    });
+
+    console.log(response);
+
+    if (!response.ok) {
+        console.log(await response.text());
+        alert("Upload failed.");
+        return;
+    }
+
+    const result = await response.json();
+    console.log(result);
+
+    alert(result.message || "Upload complete!");
+
+    pdfInput.value = "";
+}
+
+
 sendButton.addEventListener("click", sendMessage);
+uploadButton.addEventListener("click", uploadPDF);
 
 messageInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter" && !event.shiftKey) {
