@@ -1,0 +1,42 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise RAG Assistant</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+    <header class="header">
+        <h1>Enterprise RAG Assistant</h1>
+        <p>Chat with your private documents</p>
+    </header>
+
+    <main id="chat-box" class="chat-box">
+        <div class="message ai">
+            <div class="bubble">
+                👋 Welcome! Upload a PDF and ask questions about it.
+            </div>
+            <div class="timestamp">Just now</div>
+        </div>
+    </main>
+
+    <footer class="input-area">
+        <textarea
+            id="message"
+            placeholder="Ask a question about your documents..."
+            rows="1"></textarea>
+
+        <button id="send">Send</button>
+    </footer>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
