@@ -25,8 +25,14 @@ UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 
 
+# Conversation history model
+class Message(BaseModel):
+    role: str
+    content: str
+
 class ChatRequest(BaseModel):
     question: str
+    history: list[Message] = []
 
 
 @app.get("/")
@@ -56,7 +62,11 @@ async def upload_pdf(file: UploadFile = File(...)):
     embeddings = generate_embedding(chunks)
     print("5. Embeddings generated")
 
-    add_documents(chunks, embeddings)
+    add_documents(
+        chunks,
+        embeddings,
+        file.filename,
+    )
     print("6. Documents stored")
 
     return {
@@ -68,6 +78,7 @@ async def upload_pdf(file: UploadFile = File(...)):
 
 @app.post("/chat")
 async def chat(request: ChatRequest):
+    print(request.history)
     return StreamingResponse(
         stream_answer(request.question),
         media_type="text/plain"

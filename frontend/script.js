@@ -5,8 +5,10 @@ const sendButton = document.getElementById("send");
 
 const uploadButton = document.getElementById("upload");
 const pdfInput = document.getElementById("pdf-file");
+const uploadStatus = document.getElementById("upload-status");
 
-
+// Stores the conversation history for the current chat session.
+const conversationHistory = [];
 
 function currentTime() {
     return new Date().toLocaleTimeString([], {
@@ -42,33 +44,54 @@ async function sendMessage() {
     if (!question) {
         return;
     }
+    sendButton.disabled = true;
+    sendButton.textContent = "Thinking...";
 
     addMessage(question, "user");
+    conversationHistory.push({
+        role: "user",
+        content: question,
+    });
     messageInput.value = "";
     messageInput.focus();
 
     const aiBubble = addMessage("", "ai");
 
-    const response = await fetch("http://127.0.0.1:8000/chat", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            question: question,
-        }),
-    });
+    try {
+        const response = await fetch("http://127.0.0.1:8000/chat", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                question: question,
+                history: conversationHistory,
+            }),
+        });
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
 
-    while (true) {
-        const { done, value } = await reader.read();
+        while (true) {
+            const { done, value } = await reader.read();
 
-        if (done) break;
+            if (done) break;
 
-        aiBubble.textContent += decoder.decode(value);
-        chatBox.scrollTop = chatBox.scrollHeight;
+            aiBubble.textContent += decoder.decode(value);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+        conversationHistory.push({
+            role: "assistant",
+            content: aiBubble.textContent,
+        });
+        console.log(conversationHistory);
+        sendButton.disabled = false;
+        sendButton.textContent = "Send";
+    } catch (error) {
+        aiBubble.textContent = "❌ Unable to connect to the server.";
+        console.error(error);
+        sendButton.disabled = false;
+        sendButton.textContent = "Send";
     }
 }
 
@@ -87,7 +110,10 @@ async function uploadPDF() {
     formData.append("file", file);
 
     console.log("Sending request...");
-
+    
+    uploadButton.disabled = true;
+    uploadButton.textContent = "Uploading...";
+    uploadStatus.textContent =`⏳ Uploading ${file.name}...`;
     const response = await fetch("http://127.0.0.1:8000/upload", {
         method: "POST",
         body: formData,
@@ -97,16 +123,19 @@ async function uploadPDF() {
 
     if (!response.ok) {
         console.log(await response.text());
-        alert("Upload failed.");
+        uploadStatus.textContent = "❌ Upload failed.";
+        uploadButton.disabled = false;
+        uploadButton.textContent = "Upload PDF";
         return;
     }
 
     const result = await response.json();
     console.log(result);
 
-    alert(result.message || "Upload complete!");
-
+    uploadStatus.textContent = `${file.name} uploaded successfully.`;
     pdfInput.value = "";
+    uploadButton.disabled = false;
+    uploadButton.textContent = "Upload PDF";
 }
 
 

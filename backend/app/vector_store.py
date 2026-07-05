@@ -11,7 +11,11 @@ collection: Collection = client.get_or_create_collection(
 )
 
 
-def add_documents(chunks: list[str], embeddings: list[list[float]]) -> None:
+def add_documents(
+    chunks: list[str],
+    embeddings: list[list[float]],
+    filename: str,
+) -> None:
     """
     Store document chunks and their embeddings in ChromaDB.
 
@@ -20,12 +24,14 @@ def add_documents(chunks: list[str], embeddings: list[list[float]]) -> None:
         embeddings: Embedding vector for each chunk.
     """
 
-    ids = [f"chunk_{i}" for i in range(len(chunks))]
+    ids = [f"{filename}_chunk_{i}" for i in range(len(chunks))]
+    metadata = [{"filename": filename} for _ in chunks]
 
     collection.add(
         ids=ids,
         documents=chunks,
         embeddings=embeddings,
+        metadatas=metadata,
     )
 
 

@@ -129,9 +129,30 @@ body {
 
 #pdf-file {
     flex: 1;
+    align-self: center;
 }
 
 #upload {
     padding: 10px 16px;
+    border: none;
+    border-radius: 12px;
+    background: #10a37f;
+    color: white;
     cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+#upload:hover {
+    background: #0e8f70;
+}
+#upload-status {
+    min-height: 28px;
+    padding: 10px 16px;
+    color: #10a37f;
+    font-size: 0.9rem;
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
