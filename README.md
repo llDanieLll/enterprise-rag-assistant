@@ -1,6 +1,6 @@
 # Enterprise RAG Assistant
 
-An enterprise-ready Retrieval-Augmented Generation (RAG) assistant built with FastAPI, LangChain, Ollama, and ChromaDB.
+An enterprise-ready Retrieval-Augmented Generation (RAG) assistant built from scratch with FastAPI, Ollama, and ChromaDB.
 
 This project demonstrates how organizations can securely connect Large Language Models (LLMs) to private company knowledge without retraining the model. Instead of relying solely on the model's built-in knowledge, the assistant retrieves relevant internal documents and uses them as context before generating an answer.
 
@@ -8,29 +8,31 @@ This project demonstrates how organizations can securely connect Large Language 
 
 ## Features
 
-- Upload private company documents (PDF)
-- Automatically split documents into chunks
-- Generate vector embeddings
-- Store embeddings in ChromaDB
-- Semantic similarity search
+- Upload one or more PDF documents
+- Automatic document chunking
+- Local embedding generation
+- ChromaDB vector storage
+- Semantic similarity retrieval
 - Retrieval-Augmented Generation (RAG)
+- Streaming responses
+- Conversation memory
+- Multi-document support with metadata
+- FastAPI REST backend
 - Local LLM inference using Ollama
-- REST API built with FastAPI
-- Ready for enterprise knowledge bases
 
 ---
 
 ## Tech Stack
 
 | Component | Technology |
-|-----------|------------|
+|-----------|-------------------------|
 | Backend | FastAPI |
-| LLM Framework | LangChain |
+| RAG Pipeline | Custom RAG Pipeline |
 | Local LLM | Ollama |
-| Model | Llama 3 |
+| Model | Qwen2.5:3B (configurable via Ollama) |
 | Vector Database | ChromaDB |
-| Embeddings | Ollama Embeddings |
-| Document Loader | LangChain PDF Loader |
+| Embeddings | Ollama Embedding Model |
+| Document Loader | PyMuPDF (fitz) |
 | API Testing | Swagger UI |
 | Language | Python |
 
@@ -41,17 +43,23 @@ This project demonstrates how organizations can securely connect Large Language 
 ```
 enterprise-rag-assistant/
 │
-├── app/
-│   ├── main.py
-│   ├── rag.py
-│   └── pdf_loader.py
+├── backend/
+│   ├── app/
+│   │   ├── main.py
+│   │   ├── rag.py
+│   │   ├── retriever.py
+│   │   ├── vector_store.py
+│   │   ├── embeddings.py
+│   │   ├── chunker.py
+│   │   ├── pdf_loader.py
+│   │   └── models.py
+│   ├── uploads/
+│   └── vector_store/
 │
-├── data/
-│   └── sample.pdf
-│
-├── chroma_db/
-│
-├── requirements.txt
+├── frontend/
+│   ├── index.html
+│   ├── script.js
+│   └── style.css
 │
 └── README.md
 ```
@@ -67,7 +75,7 @@ enterprise-rag-assistant/
                FastAPI Endpoint
                      │
                      ▼
-            LangChain Retriever
+                  Retriever
                      │
                      ▼
              Chroma Vector Store
@@ -78,10 +86,13 @@ enterprise-rag-assistant/
        Relevant Document Chunks
                      │
                      ▼
+         Conversation History
+                     │
+                     ▼
             Prompt Construction
                      │
                      ▼
-            Ollama (Llama 3)
+            Ollama (Qwen2.5)
                      │
                      ▼
                  Final Answer
@@ -117,7 +128,7 @@ Clone the repository:
 ```bash
 git clone https://github.com/<your_username>/enterprise-rag-assistant.git
 
-cd enterprise-rag-assistant
+cd enterprise-rag-assistant/backend
 ```
 
 Create a virtual environment:
@@ -178,6 +189,8 @@ Then launch FastAPI:
 uvicorn app.main:app --reload
 ```
 
+In another terminal, start the frontend (or open `frontend/index.html` if using a static server).
+
 Open:
 
 ```
@@ -216,30 +229,28 @@ Retrieval-Augmented Generation (RAG) combines semantic retrieval with a language
 ## Skills Demonstrated
 
 - Retrieval-Augmented Generation (RAG)
-- LangChain Pipelines
-- Prompt Engineering
-- Vector Databases
-- Embedding Models
+- FastAPI Backend Development
+- ChromaDB Vector Database
 - Semantic Search
-- FastAPI Development
-- REST API Design
-- Local LLM Deployment
-- Enterprise AI Architecture
+- Prompt Engineering
+- Conversation Memory
+- Streaming LLM Responses
+- Multi-document Retrieval
+- Ollama Local LLM Deployment
+- AI System Architecture
 
 ---
 
 ## Future Improvements
 
-- Multi-document upload
-- Conversation memory
+- AI agent with dynamic tool selection
+- Web search tool integration
+- Source citation in responses
 - User authentication
-- Streaming responses
-- Citation of retrieved sources
 - Docker deployment
-- PostgreSQL integration
-- Cloud deployment (AWS/Azure/GCP)
 - Hybrid search (keyword + vector)
-- Admin dashboard
+- Long-term memory
+- Multi-step agent planning
 
 ---
 
@@ -249,7 +260,7 @@ Through this project I learned:
 
 - How enterprise AI systems connect LLMs with private knowledge.
 - How vector embeddings enable semantic search.
-- How LangChain orchestrates retrieval pipelines.
+- How to implement a custom RAG pipeline from scratch using FastAPI, Ollama, and ChromaDB.
 - How ChromaDB stores and retrieves document embeddings.
 - How FastAPI exposes AI functionality as REST APIs.
 - How Ollama enables fully local LLM inference.
