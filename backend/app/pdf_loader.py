@@ -3,13 +3,17 @@ import fitz # type: ignore
 
 def extract_text(pdf_path: str) -> str:
 
-    document = fitz.open(pdf_path)
+    try:
+        document = fitz.open(pdf_path)
 
-    text = ""
+        text = ""
 
-    for page in document:
-        text += page.get_text()
+        for page in document:
+            text += page.get_text()
 
-    document.close()
+        document.close()
 
-    return text
+        return text
+    except Exception as e:
+        print("Failed to extract text",e)
+        raise
