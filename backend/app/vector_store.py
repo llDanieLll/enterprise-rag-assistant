@@ -48,7 +48,15 @@ def search(query_embedding: list[float], top_k: int = 3):
         The ChromaDB query result.
     """
 
+    # Request the matched document text together with metadata and similarity
+    # distances. This makes debugging retrieval quality much easier and prepares
+    # the project for source citations and multi-document support.
     return collection.query(
         query_embeddings=[query_embedding],
         n_results=top_k,
+        include=[
+            "documents",
+            "metadatas",
+            "distances",
+        ],
     )

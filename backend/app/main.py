@@ -8,6 +8,7 @@ from app.embeddings import generate_embedding
 from app.vector_store import add_documents
 from app.rag import stream_answer
 from pydantic import BaseModel
+from app.models import Message
 
 app = FastAPI()
 
@@ -25,10 +26,6 @@ UPLOAD_DIR = Path("uploads")
 UPLOAD_DIR.mkdir(exist_ok=True)
 
 
-# Conversation history model
-class Message(BaseModel):
-    role: str
-    content: str
 
 class ChatRequest(BaseModel):
     question: str
@@ -80,6 +77,9 @@ async def upload_pdf(file: UploadFile = File(...)):
 async def chat(request: ChatRequest):
     print(request.history)
     return StreamingResponse(
-        stream_answer(request.question),
+        stream_answer(
+            request.question,
+            request.history,
+        ),
         media_type="text/plain"
     )
