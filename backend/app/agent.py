@@ -1,73 +1,66 @@
 """
 agent.py
 
-The Agent is the "brain" of the system.
+Version 1 of the AI Agent.
 
-Responsibilities:
-1. Receive the user's question.
-2. Decide whether a tool is needed.
-3. Execute the selected tool.
-4. Return the final answer.
+Current responsibilities:
+1. Own a Toolbox instance.
+2. Ask the Toolbox which tools are available.
+3. Build a tool-selection prompt for the LLM.
 
-For now, the decision is rule-based.
-Later, it will be replaced by an LLM.
+Tool execution will be added in the next iteration.
 """
+
+from app.toolbox import Toolbox
+from openai import OpenAI
 
 
 class Agent:
+    """The decision-making component of the AI Agent."""
+
     def __init__(self):
-        pass
+        self.toolbox = Toolbox()
+        self.client = OpenAI()
 
-    def decide(self, question: str) -> str:
-        """
-        Decide which tool to use.
+    def available_tools(self) -> list[dict]:
+        """Return metadata describing every available tool."""
+        return self.toolbox.list_tools()
 
-        Returns:
-            "pdf_search" -> Search uploaded PDFs
-            "none" -> Answer directly
-        """
+    def build_tool_selection_prompt(self, user_question: str) -> str:
+        """Construct the prompt that asks the LLM to choose a tool."""
 
-        question = question.lower()
+        tool_descriptions = self.available_tools()
 
-        pdf_keywords = [
-            "pdf",
-            "document",
-            "file",
-            "resume",
-            "certificate",
-        ]
+        tools_text = "\n".join(
+            f"- {tool['name']}: {tool['description']}"
+            for tool in tool_descriptions
+        )
 
-        if any(keyword in question for keyword in pdf_keywords):
-            return "pdf_search"
+        prompt = f"""
+You are an AI agent.
 
-        return "none"
+Available tools:
+{tools_text}
 
-    def execute(self, tool: str, question: str):
-        """
-        Execute the selected tool.
+User question:
+{user_question}
 
-        This is only a placeholder.
-        Actual tool implementations will be added later.
-        """
+Choose the single best tool for solving the user's request.
+Return ONLY the tool name.
+""".strip()
 
-        if tool == "pdf_search":
-            return {
-                "tool": tool,
-                "result": "PDF search placeholder",
-            }
+        return prompt
 
-        return {
-            "tool": "none",
-            "result": None,
-        }
+    def select_tool(self, user_question: str) -> str:
+        """Ask the LLM to choose the best tool for the user's request."""
 
-    def run(self, question: str):
-        """
-        Main entry point of the Agent.
-        """
+        prompt = self.build_tool_selection_prompt(user_question)
 
-        tool = self.decide(question)
+        response = self.client.responses.create(
+            model="gpt-5.5",
+            input=prompt,
+        )
 
-        observation = self.execute(tool, question)
+        tool_name = response.output_text.strip()
 
-        return observation
+        return tool_name
