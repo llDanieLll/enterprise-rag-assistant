@@ -1,4 +1,4 @@
-from app.retriever import retrieve
+from app.rag.retriever import retrieve
 
 question = "What is this certificate about?"
 

@@ -8,7 +8,7 @@ It does NOT call the LLM.
 It simply returns observations for the Agent.
 """
 
-from app.retriever import retrieve
+from app.rag.retriever import retrieve
 
 
 def pdf_search(question: str) -> dict:
