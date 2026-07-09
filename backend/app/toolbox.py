@@ -1,5 +1,3 @@
-
-
 """
 toolbox.py
 
@@ -12,15 +10,23 @@ Responsibilities:
 4. (Future) Execute a selected tool.
 """
 
-from app.calculator import calculator
-from app.calender import calendar
-from app.filesystem import filesystem
-from app.memory import memory
-from app.pdf_search import pdf_search
-from app.python_executor import python_executor
-from app.sql_database import sql_database
-from app.web_search import web_search
-from email_sender import email_sender
+from app.tools.calculator import calculator
+from app.tools.calender import calendar
+from app.tools.filesystem import filesystem
+from app.tools.pdf_search import pdf_search
+from app.tools.python_executor import python_executor
+from app.tools.sql_database import sql_database
+from app.tools.web_search import web_search
+
+try:
+    from app.memory import memory
+except ImportError:
+    memory = None
+
+try:
+    from app.email_sender import email_sender
+except ImportError:
+    email_sender = None
 
 
 class Toolbox:
@@ -40,10 +46,6 @@ class Toolbox:
                 "function": filesystem,
                 "description": "Read files from the local filesystem.",
             },
-            "memory": {
-                "function": memory,
-                "description": "Store and retrieve long-term memory.",
-            },
             "pdf_search": {
                 "function": pdf_search,
                 "description": "Search uploaded PDF documents.",
@@ -60,11 +62,19 @@ class Toolbox:
                 "function": web_search,
                 "description": "Search the web for current information.",
             },
-            "email_sender": {
+        }
+
+        if memory is not None:
+            self.tools["memory"] = {
+                "function": memory,
+                "description": "Store and retrieve long-term memory.",
+            }
+
+        if email_sender is not None:
+            self.tools["email_sender"] = {
                 "function": email_sender,
                 "description": "Send emails on behalf of the user.",
-            },
-        }
+            }
 
     def list_tools(self) -> list[dict]:
         """Return the name and description of every registered tool."""

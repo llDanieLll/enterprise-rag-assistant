@@ -2,11 +2,11 @@ from pathlib import Path
 from fastapi import FastAPI, File, UploadFile
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
-from app.pdf_loader import extract_text
-from app.chunker import chunk_text
-from app.embeddings import generate_embedding
-from app.vector_store import add_documents
-from app.rag import stream_answer
+from app.rag.pdf_loader import extract_text
+from app.rag.chunker import chunk_text
+from app.rag.embeddings import generate_embedding
+from app.rag.vector_store import add_documents
+from app.rag.rag import stream_answer
 from pydantic import BaseModel
 from app.models import Message
 
