@@ -1,58 +1,58 @@
-# Enterprise RAG Assistant
+# Enterprise AI Runtime
 
-An enterprise-ready Retrieval-Augmented Generation (RAG) assistant built from scratch with FastAPI, Ollama, and ChromaDB.
-
-This project demonstrates how organizations can securely connect Large Language Models (LLMs) to private company knowledge without retraining the model. Instead of relying solely on the model's built-in knowledge, the assistant retrieves relevant internal documents and uses them as context before generating an answer.
+This project began as an enterprise-ready Retrieval-Augmented Generation (RAG) assistant but is now evolving into a modular AI Runtime designed to handle planning, execution, retrieval, and tool calling in a flexible and extensible manner.
 
 ---
 
-## Features
+## Core Architecture
 
-- Upload one or more PDF documents
-- Automatic document chunking
-- Local embedding generation
-- ChromaDB vector storage
-- Semantic similarity retrieval
-- Retrieval-Augmented Generation (RAG)
-- Streaming responses
-- Conversation memory
-- Multi-document support with metadata
-- FastAPI REST backend
-- Local LLM inference using Ollama
+- **RuntimeState**: Maintains the current state of the runtime, including context, memory, and execution history.
+- **Planner**: Responsible for generating actionable plans based on the current state and user requests.
+- **Plan**: Represents a sequence of steps or actions derived by the planner to fulfill a request.
+- **Executor**: Executes the plan by invoking appropriate tools and managing execution flow.
+- **Toolbox**: A registry and manager of available tools that the executor can call upon.
+- **RAG**: Handles retrieval-augmented generation by integrating document retrieval with language model responses.
+- **Providers**: Abstract interfaces to external services such as LLMs, calculators, and web search.
 
 ---
 
-## Tech Stack
+## Architecture Diagram
 
-| Component | Technology |
-|-----------|-------------------------|
-| Backend | FastAPI |
-| RAG Pipeline | Custom RAG Pipeline |
-| Local LLM | Ollama |
-| Model | Qwen2.5:3B (configurable via Ollama) |
-| Vector Database | ChromaDB |
-| Embeddings | Ollama Embedding Model |
-| Document Loader | PyMuPDF (fitz) |
-| API Testing | Swagger UI |
-| Language | Python |
+```mermaid
+flowchart TD
+    U[User Request] --> S[RuntimeState]
+    S --> P[Planner]
+    P --> PL[Plan]
+    PL --> E[Executor]
+    E --> T[Toolbox]
+    T --> R[Retriever]
+    T --> C[Calculator]
+    T --> W[Web Search]
+    T --> L[LLM Provider]
+    R --> ER[Execution Result]
+    C --> ER
+    W --> ER
+    L --> ER
+    ER --> SM[State Manager (Coming Soon)]
+    SM --> S
+```
 
 ---
 
 ## Project Structure
 
 ```
-enterprise-rag-assistant/
+enterprise-ai-runtime/
 │
 ├── backend/
 │   ├── app/
-│   │   ├── main.py
-│   │   ├── rag.py
-│   │   ├── retriever.py
-│   │   ├── vector_store.py
-│   │   ├── embeddings.py
-│   │   ├── chunker.py
-│   │   ├── pdf_loader.py
-│   │   └── models.py
+│   │   ├── planner/
+│   │   ├── runtime/
+│   │   ├── providers/
+│   │   ├── rag/
+│   │   ├── tools/
+│   │   ├── toolbox.py
+│   │   └── main.py
 │   ├── uploads/
 │   └── vector_store/
 │
@@ -66,58 +66,14 @@ enterprise-rag-assistant/
 
 ---
 
-## Architecture
+## Current Runtime Workflow
 
-```
-               User Question
-                     │
-                     ▼
-               FastAPI Endpoint
-                     │
-                     ▼
-                  Retriever
-                     │
-                     ▼
-             Chroma Vector Store
-                     │
-      Semantic Similarity Search
-                     │
-                     ▼
-       Relevant Document Chunks
-                     │
-                     ▼
-         Conversation History
-                     │
-                     ▼
-            Prompt Construction
-                     │
-                     ▼
-            Ollama (Qwen2.5)
-                     │
-                     ▼
-                 Final Answer
-```
-
----
-
-## How RAG Works
-
-Traditional LLMs only answer based on what they learned during training.
-
-RAG (Retrieval-Augmented Generation) adds an external knowledge source.
-
-The workflow is:
-
-1. Load documents
-2. Split into smaller chunks
-3. Convert chunks into embeddings
-4. Store embeddings in ChromaDB
-5. User asks a question
-6. Retrieve the most relevant chunks
-7. Send both the question and retrieved context to the LLM
-8. Generate an accurate answer grounded in the documents
-
-This allows the model to answer questions using private enterprise knowledge without fine-tuning.
+1. The **RuntimeState** captures the current context and user input.
+2. The **Planner** analyzes the state and formulates a **Plan**.
+3. The **Executor** carries out the plan by interacting with the **Toolbox**.
+4. The **Toolbox** invokes appropriate tools such as retrievers, calculators, web search, or LLM providers.
+5. Each tool returns an **Execution Result**.
+6. The results update the **RuntimeState**, enabling iterative and dynamic processing.
 
 ---
 
@@ -126,9 +82,9 @@ This allows the model to answer questions using private enterprise knowledge wit
 Clone the repository:
 
 ```bash
-git clone https://github.com/<your_username>/enterprise-rag-assistant.git
+git clone https://github.com/<your_username>/enterprise-ai-runtime.git
 
-cd enterprise-rag-assistant/backend
+cd enterprise-ai-runtime/backend
 ```
 
 Create a virtual environment:
@@ -159,26 +115,6 @@ pip install -r requirements.txt
 
 ---
 
-## Install Ollama
-
-Download Ollama from:
-
-https://ollama.com
-
-Pull the model:
-
-```bash
-ollama pull llama3
-```
-
-Verify:
-
-```bash
-ollama list
-```
-
----
-
 ## Run the Application
 
 Start Ollama first.
@@ -201,72 +137,27 @@ Swagger UI can be used to test the API.
 
 ---
 
-## Example Workflow
+## Roadmap
 
-1. Place a PDF inside the `data/` folder.
-2. Run the document loader.
-3. Chunks are embedded and stored in ChromaDB.
-4. Ask a question through the API.
-5. The assistant retrieves relevant context.
-6. Llama 3 generates the final response.
-
----
-
-## Example Question
-
-```
-What is Retrieval-Augmented Generation?
-```
-
-Example response:
-
-```
-Retrieval-Augmented Generation (RAG) combines semantic retrieval with a language model by first searching a vector database for relevant document chunks and then using those chunks as context for answer generation.
-```
+- [x] RuntimeState  
+- [x] Planner  
+- [x] Plan  
+- [x] Executor  
+- [x] Toolbox  
+- [ ] ExecutionResult  
+- [ ] StateManager  
+- [ ] Runtime Engine  
+- [ ] LLM-based Planner  
 
 ---
 
-## Skills Demonstrated
+## Design Principles
 
-- Retrieval-Augmented Generation (RAG)
-- FastAPI Backend Development
-- ChromaDB Vector Database
-- Semantic Search
-- Prompt Engineering
-- Conversation Memory
-- Streaming LLM Responses
-- Multi-document Retrieval
-- Ollama Local LLM Deployment
-- AI System Architecture
+- Clear separation of responsibilities between components ensures modularity and maintainability.
+- The **Planner** decides what actions to take; the **Executor** performs those actions.
+- The **Toolbox** serves as the central registry and access point for all runtime tools.
+- The runtime evolves through explicit state transitions, enabling flexible and iterative workflows.
 
 ---
 
-## Future Improvements
-
-- AI agent with dynamic tool selection
-- Web search tool integration
-- Source citation in responses
-- User authentication
-- Docker deployment
-- Hybrid search (keyword + vector)
-- Long-term memory
-- Multi-step agent planning
-
----
-
-## Learning Outcomes
-
-Through this project I learned:
-
-- How enterprise AI systems connect LLMs with private knowledge.
-- How vector embeddings enable semantic search.
-- How to implement a custom RAG pipeline from scratch using FastAPI, Ollama, and ChromaDB.
-- How ChromaDB stores and retrieves document embeddings.
-- How FastAPI exposes AI functionality as REST APIs.
-- How Ollama enables fully local LLM inference.
-
----
-
-## License
-
-This project is for educational and portfolio purposes.
+This project demonstrates a professional approach to building an extensible AI Runtime suitable for enterprise applications and advanced AI system architectures.
