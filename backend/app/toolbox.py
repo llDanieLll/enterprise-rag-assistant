@@ -7,7 +7,7 @@ Responsibilities:
 1. Register available tools.
 2. Describe available tools to the LLM.
 3. Retrieve a tool by name.
-4. (Future) Execute a selected tool.
+4. Execute a selected tool.
 """
 
 from app.tools.calculator import calculator
@@ -87,8 +87,14 @@ class Toolbox:
         ]
 
     def get_tool(self, name: str):
-        """Return the function associated with a tool name."""
-        tool = self.tools.get(name)
+        """Return the complete registration for a tool."""
+        return self.tools.get(name)
+
+    def execute_tool(self, name: str, *args, **kwargs):
+        """Execute a registered tool by name."""
+        tool = self.get_tool(name)
+
         if tool is None:
-            return None
-        return tool["function"]
+            raise ValueError(f"Unknown tool: {name}")
+
+        return tool["function"](*args, **kwargs)

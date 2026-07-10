@@ -1,5 +1,5 @@
 from app.rag.embeddings import generate_embedding
-from vector_store import search
+from app.rag.vector_store import search
 
 
 def retrieve(question: str, top_k: int = 3) -> list[str]:
