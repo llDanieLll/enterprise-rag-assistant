@@ -1,7 +1,9 @@
 from dataclasses import dataclass, field
 from typing import Any
 
+
 from app.models import Message
+from app.runtime.execution_result import ExecutionResult
 
 
 @dataclass
@@ -21,13 +23,16 @@ class RuntimeState:
     uploaded_files: list[str] = field(default_factory=list)
     retrieved_chunks: list[str] = field(default_factory=list)
 
-    # ===== Observations =====
-    observations: dict[str, Any] = field(default_factory=dict)
+    # ===== Execution History =====
+    # Chronological history of all execution results produced during
+    # the current runtime session.
+    observations: list[ExecutionResult] = field(default_factory=list)
 
     # ===== Long-Term Memory =====
     long_term_memory: dict[str, Any] = field(default_factory=dict)
 
-    # ===== Runtime Variables =====
+    # ===== Runtime Context =====
+    # Ephemeral variables used while the runtime is executing.
     runtime_variables: dict[str, Any] = field(default_factory=dict)
 
     # ===== Environment =====
