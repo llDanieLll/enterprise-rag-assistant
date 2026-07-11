@@ -17,6 +17,15 @@ class Planner:
 
         message = state.current_user_message.lower()
 
+        # Rule 0: Finish if the runtime has already produced a final response.
+        # This is a placeholder termination rule and will later be replaced by
+        # an LLM-based planning decision.
+        if state.runtime_variables.get("finished", False):
+            return Plan(
+                action=Action.FINISH,
+                reason="The task has already been completed.",
+            )
+
         # Rule 1: Requests that require arithmetic.
         calculation_keywords = [
             "calculate",
@@ -33,14 +42,23 @@ class Planner:
                 reason="The request requires arithmetic.",
             )
 
-        # Rule 2: If documents have been uploaded, prefer retrieval.
-        if state.uploaded_files:
+        # Rule 2: Retrieve from uploaded documents only if retrieval has not
+        # already been performed during this runtime session.
+        if state.uploaded_files and not state.retrieved_chunks:
             return Plan(
                 action=Action.RETRIEVE,
                 reason="Relevant information may exist in the uploaded documents.",
             )
 
-        # Rule 3: Default to normal conversation.
+        # Rule 3: If retrieval has already been completed, continue with normal
+        # conversation (later this may become tool use or answer generation).
+        if state.retrieved_chunks:
+            return Plan(
+                action=Action.CHAT,
+                reason="Relevant context has already been retrieved.",
+            )
+
+        # Rule 4: Default to normal conversation.
         return Plan(
             action=Action.CHAT,
             reason="General conversation; no tool or retrieval required.",

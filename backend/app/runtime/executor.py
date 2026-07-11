@@ -1,8 +1,7 @@
-
-
 from app.runtime.plan import Action, Plan
 from app.runtime.state import RuntimeState
 from app.toolbox import Toolbox
+from app.runtime.execution_result import ExecutionResult
 
 
 class Executor:
@@ -37,37 +36,37 @@ class Executor:
         raise ValueError(f"Unsupported action: {plan.action}")
 
     def _execute_tool(self, plan: Plan, state: RuntimeState):
-        """Execute the requested tool and return a structured execution result.
-
-        For now, the execution result is represented as a dictionary. This will
-        later become an ExecutionResult dataclass.
-        """
+        """Execute the requested tool and return an ExecutionResult."""
 
         tool_result = self.toolbox.execute_tool(
             plan.tool,
             **getattr(plan, "payload", {}),
         )
 
-        return {
-            "action": plan.action.value,
-            "source": plan.tool,
-            "success": True,
-            "payload": tool_result,
-            "reason": plan.reason,
-        }
+        return ExecutionResult(
+            action=plan.action,
+            source=plan.tool,
+            success=True,
+            payload=tool_result,
+            reason=plan.reason,
+        )
 
     def _execute_retrieval(self, plan: Plan, state: RuntimeState):
         """Placeholder for retrieval execution."""
-        return {
-            "status": "pending",
-            "action": plan.action.value,
-            "reason": plan.reason,
-        }
+        return ExecutionResult(
+            action=plan.action,
+            source="retriever",
+            success=True,
+            payload=None,
+            reason=plan.reason,
+        )
 
     def _execute_chat(self, plan: Plan, state: RuntimeState):
         """Placeholder for LLM/provider execution."""
-        return {
-            "status": "pending",
-            "action": plan.action.value,
-            "reason": plan.reason,
-        }
+        return ExecutionResult(
+            action=plan.action,
+            source="provider",
+            success=True,
+            payload=None,
+            reason=plan.reason,
+        )

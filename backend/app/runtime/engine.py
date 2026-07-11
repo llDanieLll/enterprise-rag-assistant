@@ -1,5 +1,3 @@
-
-
 """Runtime engine.
 
 The RuntimeEngine orchestrates a single iteration of the AI runtime. It does
@@ -45,3 +43,24 @@ class RuntimeEngine:
         next_state = self.state_manager.transition(state, result)
 
         return next_state
+
+    def run(self, initial_state: RuntimeState) -> RuntimeState:
+        """Run the runtime until the planner signals completion.
+
+        The engine repeatedly performs single state transitions by calling
+        `step()`. The planner is responsible for deciding when the task has
+        finished by returning `Action.FINISH`.
+        """
+
+        state = initial_state
+
+        while True:
+            # Ask the planner whether another runtime step is required.
+            plan = self.planner.plan(state)
+
+            # Stop the runtime when the planner decides the task is complete.
+            if plan.action.value == "finish":
+                return state
+
+            # Perform exactly one state transition.
+            state = self.step(state)
