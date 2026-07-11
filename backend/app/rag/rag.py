@@ -1,6 +1,6 @@
 import ollama # type: ignore
 
-from app.retriever import retrieve
+from app.rag.retriever import retrieve
 from app.models import Message
 
 
