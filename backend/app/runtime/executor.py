@@ -2,6 +2,9 @@ from app.runtime.plan import Action, Plan
 from app.runtime.state import RuntimeState
 from app.toolbox import Toolbox
 from app.runtime.execution_result import ExecutionResult
+from app.rag.retriever import retrieve
+from app.providers.base import ChatProvider
+from app.providers.ollama_provider import OllamaProvider
 
 
 class Executor:
@@ -11,8 +14,12 @@ class Executor:
     decide what to do—that responsibility belongs to the Planner.
     """
 
-    def __init__(self):
+    def __init__(self, provider: ChatProvider | None = None):
         self.toolbox = Toolbox()
+        # These integrations will be wired to the real implementations
+        # in the next development stage.
+        self.retriever = retrieve
+        self.provider = provider or OllamaProvider()
 
     def execute(self, plan: Plan, state: RuntimeState):
         """Execute the given plan.
@@ -31,7 +38,13 @@ class Executor:
             return self._execute_chat(plan, state)
 
         if plan.action == Action.FINISH:
-            return None
+            return ExecutionResult(
+                action=plan.action,
+                source="runtime",
+                success=True,
+                payload=plan.payload,
+                reason=plan.reason,
+            )
 
         raise ValueError(f"Unsupported action: {plan.action}")
 
@@ -40,7 +53,7 @@ class Executor:
 
         tool_result = self.toolbox.execute_tool(
             plan.tool,
-            **getattr(plan, "payload", {}),
+            **plan.payload,
         )
 
         return ExecutionResult(
@@ -52,21 +65,37 @@ class Executor:
         )
 
     def _execute_retrieval(self, plan: Plan, state: RuntimeState):
-        """Placeholder for retrieval execution."""
+        """Execute a retrieval request described by the plan payload."""
+        payload = plan.payload
+        question = payload["query"]
+        top_k = payload.get("top_k", 3)
+        retrieval_result = self.retriever(question=question, top_k=top_k)
+
         return ExecutionResult(
             action=plan.action,
             source="retriever",
             success=True,
-            payload=None,
+            payload=retrieval_result,
             reason=plan.reason,
         )
 
     def _execute_chat(self, plan: Plan, state: RuntimeState):
-        """Placeholder for LLM/provider execution."""
+        """Execute a chat/provider request described by the plan payload."""
+        payload = plan.payload
+        message = payload["message"]
+        context = payload.get("context")
+        model = payload.get("model", state.environment.get("model"))
+
+        chat_result = self.provider.chat(
+            message=message,
+            context=context if isinstance(context, list) else ([context] if context else None),
+            model=model,
+        )
+
         return ExecutionResult(
             action=plan.action,
             source="provider",
             success=True,
-            payload=None,
+            payload=chat_result,
             reason=plan.reason,
         )

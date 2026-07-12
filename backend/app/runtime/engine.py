@@ -47,20 +47,45 @@ class RuntimeEngine:
     def run(self, initial_state: RuntimeState) -> RuntimeState:
         """Run the runtime until the planner signals completion.
 
-        The engine repeatedly performs single state transitions by calling
-        `step()`. The planner is responsible for deciding when the task has
-        finished by returning `Action.FINISH`.
+        The engine repeatedly performs planning, execution, and state
+        transitions while printing a development trace of each iteration.
         """
 
         state = initial_state
+        iteration = 1
 
         while True:
-            # Ask the planner whether another runtime step is required.
+            print("\n" + "=" * 60)
+            print(f"Iteration {iteration}")
+            print("=" * 60)
+
+            # Ask the planner for the next action.
             plan = self.planner.plan(state)
 
-            # Stop the runtime when the planner decides the task is complete.
+            print(f"Planner Action : {plan.action.value}")
+            print(f"Reason         : {plan.reason}")
+
+            if getattr(plan, "tool", None):
+                print(f"Tool           : {plan.tool}")
+
+            if getattr(plan, "payload", None):
+                print(f"Payload        : {plan.payload}")
+
+            # Stop if the planner decides the task is complete.
             if plan.action.value == "finish":
+                print("\nAgent execution completed.")
                 return state
 
-            # Perform exactly one state transition.
-            state = self.step(state)
+            # Execute the current plan.
+            result = self.executor.execute(plan, state)
+
+            print(f"Executor Source: {result.source}")
+            print(f"Success        : {result.success}")
+            print(f"Observation    : {result.payload}")
+
+            # Transition to the next runtime state.
+            state = self.state_manager.transition(state, result)
+
+            print("State updated.")
+
+            iteration += 1
